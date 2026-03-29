@@ -21,6 +21,7 @@ fun main() {
     }
 
     while (true) {
+        println()
         println("Please enter the number of your desired command:")
         println("1. View bills")
         println("2. Manage accounts")
@@ -39,13 +40,15 @@ fun main() {
 }
 
 fun manageBills() {
-    if (Database.accountSet.isNotEmpty() && Database.billSet.isNotEmpty()) {
-        Database.accountSet.forEach { acct ->
-            Database.billSet.filter { it.account == acct }
-                .forEach { println(it) }
-        }
-    }
     while (true) {
+        println()
+        if (Database.accountSet.isNotEmpty() && Database.billSet.isNotEmpty()) {
+            Database.accountSet.forEach { acct ->
+                Database.billSet.filter { it.account == acct }
+                    .forEach { println(it) }
+            }
+            println()
+        }
         print("What would you like to do? add, update, delete, back: ")
         when (readln().lowercase()) {
             "add" -> {
@@ -77,10 +80,12 @@ fun manageBills() {
 }
 
 fun manageAccounts() {
-    if (Database.accountSet.isNotEmpty()) {
-        Database.accountSet.forEach { println(it) }
-    }
     while (true) {
+        println()
+        if (Database.accountSet.isNotEmpty()) {
+            Database.accountSet.forEach { println(it) }
+            println()
+        }
         print("What would you like to do? add, update, delete, back: ")
         when (readln().lowercase()) {
             "add" -> Database.addAccount()

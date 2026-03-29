@@ -15,6 +15,8 @@ class Database {
                     Json.decodeFromString<Pair<MutableSet<Account>, MutableSet<Bill>>>(File(filename).readText())
                 accountSet = dbPair.first
                 billSet = dbPair.second
+                // Ridiculous step to relink bill.account entries to accountSet entries
+                billSet.forEach { it.account = accountByName(it.account.name)!! }
                 println("Load successful.")
             } catch (_: FileNotFoundException) {
                 println("File not found: $filename")
@@ -32,11 +34,11 @@ class Database {
         }
 
         //********* Retrieve Items **********//
-        fun accountByName(name: String): Account? {
+        fun accountByName(name: String?): Account? {
             return accountSet.firstOrNull { it.name == name }
         }
 
-        fun existingAccountPrompt(): Account {
+        fun existingAccountPrompt(isUpdate: Boolean = false): Account {
             var testAccount: Account
             while (true) {
                 accountSet.forEach { println(it) }
@@ -46,8 +48,10 @@ class Database {
                 val name = namePrompt(ObjectType.ACCOUNT, isUpdate = true)
                 if (selectedAccount != null && name == null) {
                     return selectedAccount!!
+                } else if (name == null && isUpdate) {
+                    return Account("", 0.0)
                 }
-                if (accountByName(name!!) == null) {
+                if (accountByName(name) == null) {
                     println("No account by that name exists. Please try again.")
                 } else {
                     testAccount = accountByName(name)!!
@@ -152,10 +156,11 @@ class Database {
             var name = namePrompt(ObjectType.BILL, isUpdate = true)
             var amountDue = dollarPrompt(ObjectType.BILL, isUpdate = true)
             var dueDate = datePrompt(isUpdate = true)
-            val account = existingAccountPrompt()
+            var account = existingAccountPrompt(isUpdate = true)
             if (name == null) name = oldBill.name
             if (amountDue == null) amountDue = oldBill.amount
             if (dueDate == null) dueDate = oldBill.dueDate
+            if (account.name == "") account = oldBill.account
             val newBill = Bill(name, amountDue, dueDate, account)
             if (confirmationPrompt(newBill.toString(), ObjectType.BILL)) {
                 LOGGER.debug("Bill updated: {} -> {}", oldBill, newBill)
