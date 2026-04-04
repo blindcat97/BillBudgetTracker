@@ -40,6 +40,7 @@ fun main() {
 }
 
 fun manageBills() {
+    val oType = OType.BILL
     while (true) {
         println()
         if (Database.accountSet.isNotEmpty() && Database.billSet.isNotEmpty()) {
@@ -55,21 +56,23 @@ fun manageBills() {
                 if (Database.accountSet.isEmpty()) {
                     println("You have to create an account to add bills to first.")
                 } else {
-                    Database.addBill()
+                    val newBill = createObject(oType) as Bill
+                    if (confirmationPrompt(newBill.toString(), oType)) Database.billSet.add(newBill)
+                    else println("Operation cancelled.")
                 }
             }
             "update" -> {
                 if (Database.billSet.isEmpty()) {
                     println("There are no bills yet! Add some first!")
                 } else {
-                    Database.updateBill()
+                    Database.existingBillPrompt().updateBill()
                 }
             }
             "delete" -> {
                 if (Database.billSet.isEmpty()) {
                     println("There are no bills yet! Add some first!")
                 } else {
-                    Database.deleteBill()
+                    Database.existingBillPrompt().deleteBill()
                 }
             }
             "back" -> return
@@ -80,6 +83,7 @@ fun manageBills() {
 }
 
 fun manageAccounts() {
+    val oType = OType.ACCOUNT
     while (true) {
         println()
         if (Database.accountSet.isNotEmpty()) {
@@ -88,19 +92,33 @@ fun manageAccounts() {
         }
         print("What would you like to do? add, update, delete, back: ")
         when (readln().lowercase()) {
-            "add" -> Database.addAccount()
+            "add" -> {
+                val newAccount = createObject(oType) as Account
+                if (confirmationPrompt(newAccount.toString(), oType)) Database.accountSet.add(newAccount)
+                else println("Operation cancelled.")
+            }
             "update" -> {
                 if (Database.accountSet.isEmpty()) {
                     println("There are no accounts to update! Add some first!")
                 } else {
-                    Database.updateAccount()
+                    var accountToUpdate = Database.existingAccountPrompt()
+                    while (accountToUpdate == null) {
+                        println("Name cannot be empty. Try again.")
+                        accountToUpdate = Database.existingAccountPrompt()
+                    }
+                    accountToUpdate.updateAccount()
                 }
             }
             "delete" -> {
                 if (Database.accountSet.isEmpty()) {
                     println("There are no accounts to delete! Add some first!")
                 } else {
-                    Database.deleteAccount()
+                    var accountToUpdate = Database.existingAccountPrompt()
+                    while (accountToUpdate == null) {
+                        println("Name cannot be empty. Try again.")
+                        accountToUpdate = Database.existingAccountPrompt()
+                    }
+                    accountToUpdate.deleteAccount()
                 }
             }
             "back" -> return
